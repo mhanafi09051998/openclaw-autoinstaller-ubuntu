@@ -8,6 +8,9 @@ set -euo pipefail
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
 NC='\033[0m'
 
 # Defaults
@@ -24,6 +27,7 @@ REQUIRED_HOSTS=("openclaw.ai" "deb.nodesource.com" "registry.npmjs.org" "github.
 log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+log_cmd()  { echo -e "  ${CYAN}$1${NC}"; }
 
 usage() {
     cat <<EOF
@@ -57,7 +61,7 @@ confirm() {
         return 0
     fi
 
-    read -r -p "$prompt (y/N): " REPLY
+    read -r -p "$(echo -e "${BOLD}${prompt}${NC} [${GREEN}y${NC}/${RED}N${NC}]: ")" REPLY
     [[ "$REPLY" =~ ^[Yy]$ ]]
 }
 
@@ -294,11 +298,11 @@ maybe_start_gateway() {
     echo ""
     log_info "Instalasi OpenClaw selesai!"
     echo ""
-    echo "Untuk memulai gateway, jalankan:"
-    echo "  openclaw gateway start"
+    echo -e "${BLUE}Untuk memulai gateway, jalankan:${NC}"
+    log_cmd "openclaw gateway start"
     echo ""
-    echo "Untuk menjalankan proses onboarding:"
-    echo "  openclaw onboard"
+    echo -e "${BLUE}Untuk menjalankan proses onboarding:${NC}"
+    log_cmd "openclaw onboard"
     echo ""
 
     if [[ "$AUTO_START_GATEWAY" -eq 1 ]]; then
@@ -357,9 +361,9 @@ main() {
     parse_args "$@"
     setup_logging
 
-    echo "=========================================="
-    echo "  OpenClaw Auto-Installer for Ubuntu"
-    echo "=========================================="
+    echo -e "${CYAN}${BOLD}==========================================${NC}"
+    echo -e "${CYAN}${BOLD}  OpenClaw Auto-Installer for Ubuntu${NC}"
+    echo -e "${CYAN}${BOLD}==========================================${NC}"
     echo ""
     log_info "File log: ${LOG_FILE}"
 
