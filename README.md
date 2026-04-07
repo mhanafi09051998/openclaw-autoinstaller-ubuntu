@@ -87,6 +87,30 @@ Jangan jalankan folder repo seperti ini karena itu direktori, bukan file:
 ./openclaw-autoinstaller-ubuntu/
 ```
 
+## Memperbarui Instalasi yang Sudah Ada
+
+Jika OpenClaw sudah terpasang sebelumnya (baik lewat installer ini maupun cara lain), jalankan
+installer ulang dengan flag `--reinstall`:
+
+```bash
+cd ~/openclaw-autoinstaller-ubuntu
+git pull
+chmod +x openclaw-ubuntu-installer.sh
+./openclaw-ubuntu-installer.sh --reinstall
+```
+
+Skrip akan mendeteksi instalasi lama secara otomatis, melewati konfirmasi, lalu menjalankan ulang
+seluruh proses — mulai dari pemeriksaan awal, pembaruan dependensi, hingga verifikasi akhir.
+
+Jika ingin sepenuhnya otomatis tanpa prompt apapun:
+
+```bash
+./openclaw-ubuntu-installer.sh --yes
+```
+
+> **Catatan:** `--reinstall` dan `--yes` keduanya membuat installer melewati konfirmasi pasang ulang.
+> Perbedaannya, `--yes` juga menjawab **ya** untuk semua prompt lain (termasuk "Mulai gateway sekarang?").
+
 ## Mode yang Disarankan
 
 Untuk VPS produksi, gunakan mode default dulu:
