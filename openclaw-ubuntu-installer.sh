@@ -304,6 +304,10 @@ maybe_start_gateway() {
     echo -e "${BLUE}Untuk menjalankan proses onboarding:${NC}"
     log_cmd "openclaw onboard"
     echo ""
+    echo -e "${BLUE}Untuk melihat daftar slash commands yang tersedia di dalam sesi:${NC}"
+    log_cmd "/help"
+    log_cmd "/commands"
+    echo ""
 
     if [[ "$AUTO_START_GATEWAY" -eq 1 ]]; then
         openclaw gateway start

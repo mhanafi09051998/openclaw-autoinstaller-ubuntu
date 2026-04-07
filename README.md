@@ -4,7 +4,7 @@ Skrip installer otomatis untuk memasang OpenClaw di VPS Ubuntu dengan pendekatan
 
 Repositori ini menyediakan `openclaw-ubuntu-installer.sh` yang melakukan:
 
-- preflight check sebelum instalasi
+- pemeriksaan awal sebelum instalasi
 - validasi distro Ubuntu
 - pengecekan akses `sudo`
 - pengecekan konektivitas ke host penting
@@ -18,7 +18,7 @@ Repositori ini menyediakan `openclaw-ubuntu-installer.sh` yang melakukan:
 ## Cocok Untuk
 
 - VPS Ubuntu baru
-- Server staging
+- Server percobaan (staging)
 - Server produksi yang ingin menghindari `apt upgrade` otomatis
 
 ## Fitur Utama
@@ -26,9 +26,11 @@ Repositori ini menyediakan `openclaw-ubuntu-installer.sh` yang melakukan:
 - Mendukung Ubuntu `22.04`, `24.04`, dan `26.04`
 - Default lebih aman: `apt upgrade` tidak dijalankan kecuali diminta
 - Bisa dijalankan interaktif atau non-interaktif
-- Menyimpan log instalasi
-- Bisa reinstall otomatis
+- Output berwarna: banner, perintah, dan prompt pilihan tampil dengan warna berbeda
+- Menyimpan log instalasi ke file
+- Bisa pasang ulang secara otomatis
 - Bisa langsung menjalankan gateway setelah selesai
+- Menampilkan hint slash commands yang valid setelah onboarding
 
 ## Prasyarat
 
@@ -85,7 +87,7 @@ Jangan jalankan folder repo seperti ini karena itu direktori, bukan file:
 ./openclaw-autoinstaller-ubuntu/
 ```
 
-## Mode Yang Disarankan
+## Mode yang Disarankan
 
 Untuk VPS produksi, gunakan mode default dulu:
 
@@ -165,11 +167,31 @@ Skrip akan melakukan langkah berikut:
 12. Menjalankan verifikasi `openclaw --version`.
 13. Menjalankan `openclaw doctor`.
 
+## Slash Commands OpenClaw
+
+OpenClaw mendukung dua sistem perintah dalam sesi chat:
+
+- **Commands** — pesan mandiri yang diawali `/`, dieksekusi langsung
+- **Directives** — modifier persisten yang mengubah perilaku respons (misalnya `/think`, `/fast`)
+
+Daftar slash commands yang didukung:
+
+| Kategori | Perintah |
+|---|---|
+| Session & Status | `/help`, `/commands`, `/status`, `/whoami` (`/id`), `/session` |
+| Model & Pemrosesan | `/model <nama>`, `/think`, `/fast`, `/verbose`, `/reasoning`, `/elevated` |
+| Tools & Skills | `/tools [compact\|verbose]`, `/skill <nama>` |
+| Manajemen Sesi | `/reset`, `/new`, `/export-session`, `/btw <pertanyaan>` |
+| Konfigurasi (owner) | `/config show\|set\|unset`, `/debug show\|set`, `/mcp`, `/plugins` |
+| Lanjutan | `/subagents`, `/acp`, `/focus`, `/unfocus`, `/bash <perintah>` |
+
+> **Catatan:** Perintah di luar daftar di atas (misalnya `/dream`) tidak dikenal oleh server OpenClaw dan akan ditolak. Gunakan `/help` atau `/commands` di dalam sesi untuk melihat daftar lengkap yang tersedia.
+
 ## Catatan Penting
 
 - Default script ini sengaja tidak menjalankan `apt upgrade` supaya lebih aman di VPS produksi.
 - Jika OpenClaw sudah terpasang, skrip akan meminta konfirmasi kecuali memakai `--reinstall` atau `--yes`.
-- `--yes` menghilangkan prompt, jadi gunakan hanya jika Anda memang siap menerima default action.
+- `--yes` menghilangkan semua prompt, jadi gunakan hanya jika Anda memang siap menerima tindakan bawaan.
 - Kegagalan paling umum biasanya berasal dari DNS, firewall, atau repository eksternal yang tidak bisa diakses.
 
 ## Troubleshooting
