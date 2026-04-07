@@ -242,4 +242,6 @@ Jika `openclaw doctor` memberikan peringatan:
 
 ## Lisensi
 
-Belum ada file `LICENSE` di repositori ini. Jika repositori akan dipublikasikan secara lebih luas, sebaiknya tambahkan lisensi resmi.
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+© 2026 Muhammad Hanafi
