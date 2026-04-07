@@ -27,15 +27,15 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 usage() {
     cat <<EOF
-Usage: ./openclaw-ubuntu-installer.sh [options]
+Penggunaan: ./openclaw-ubuntu-installer.sh [opsi]
 
-Options:
+Opsi:
   --upgrade-system     Jalankan apt upgrade sebelum instalasi
-  --yes                Mode non-interaktif
-  --reinstall          Lanjut reinstall jika OpenClaw sudah terpasang
-  --start-gateway      Jalankan gateway otomatis setelah instalasi
+  --yes                Mode non-interaktif (jawab semua konfirmasi dengan ya)
+  --reinstall          Lanjutkan pasang ulang jika OpenClaw sudah terpasang
+  --start-gateway      Jalankan gateway secara otomatis setelah instalasi
   --log-file PATH      Simpan log ke file tertentu
-  -h, --help           Tampilkan bantuan
+  -h, --help           Tampilkan bantuan ini
 EOF
 }
 
@@ -69,36 +69,36 @@ check_command() {
 check_host_connectivity() {
     local host=$1
     if curl -fsSI --connect-timeout 5 --max-time 10 "https://${host}" >/dev/null 2>&1; then
-        log_info "Reachable: ${host}"
+        log_info "Dapat dijangkau: ${host}"
     else
-        log_warn "Cannot reach ${host}. Network or DNS may block installation later."
+        log_warn "Tidak dapat menjangkau ${host}. Jaringan atau DNS mungkin akan menghalangi proses instalasi."
     fi
 }
 
 ensure_sudo_access() {
     if [[ $EUID -eq 0 ]]; then
-        log_warn "Running as root. This is not recommended for routine VPS usage."
-        if ! confirm "Continue as root?"; then
+        log_warn "Skrip berjalan sebagai root. Hal ini tidak disarankan untuk penggunaan VPS rutin."
+        if ! confirm "Lanjutkan sebagai root?"; then
             exit 1
         fi
         return
     fi
 
     if ! sudo -n true >/dev/null 2>&1; then
-        log_info "Sudo access is required. You may be prompted for your password."
+        log_info "Akses sudo diperlukan. Anda mungkin akan diminta memasukkan kata sandi."
     fi
 
     sudo -v || {
-        log_error "Sudo authentication failed."
+        log_error "Autentikasi sudo gagal."
         exit 1
     }
 }
 
 preflight_checks() {
-    log_info "Running preflight checks..."
+    log_info "Menjalankan pemeriksaan awal..."
 
     if [[ ! -f /etc/os-release ]]; then
-        log_error "Cannot detect operating system."
+        log_error "Tidak dapat mendeteksi sistem operasi."
         exit 1
     fi
 
@@ -108,10 +108,10 @@ preflight_checks() {
     OS=${NAME:-unknown}
     DISTRO_ID=${ID:-unknown}
 
-    log_info "Detected: ${OS} ${VERSION}"
+    log_info "Sistem terdeteksi: ${OS} ${VERSION}"
 
     if [[ "$DISTRO_ID" != "ubuntu" ]]; then
-        log_error "This installer only supports Ubuntu. Detected distro ID: ${DISTRO_ID}"
+        log_error "Installer ini hanya mendukung Ubuntu. ID distro yang terdeteksi: ${DISTRO_ID}"
         exit 1
     fi
 
@@ -125,18 +125,18 @@ preflight_checks() {
     done
 
     if [[ "$supported" -eq 0 ]]; then
-        log_warn "Ubuntu ${VERSION} is outside the tested list: ${SUPPORTED_VERSIONS[*]}"
+        log_warn "Ubuntu ${VERSION} berada di luar daftar versi yang telah diuji: ${SUPPORTED_VERSIONS[*]}"
     fi
 
     for item in "${REQUIRED_COMMANDS[@]}"; do
         if ! check_command "$item"; then
-            log_error "Required command not found: $item"
+            log_error "Perintah yang diperlukan tidak ditemukan: $item"
             exit 1
         fi
     done
 
     if ! apt-cache policy >/dev/null 2>&1; then
-        log_error "apt-cache is not working correctly."
+        log_error "apt-cache tidak berfungsi dengan benar."
         exit 1
     fi
 
@@ -146,20 +146,20 @@ preflight_checks() {
 }
 
 update_packages() {
-    log_info "Updating package lists..."
+    log_info "Memperbarui daftar paket..."
     sudo apt update -qq || {
-        log_error "Failed to update package lists."
-        log_info "Retrying with verbose output..."
+        log_error "Gagal memperbarui daftar paket."
+        log_info "Mencoba lagi dengan output lengkap..."
         sudo apt update
     }
 
     if [[ "$UPGRADE_SYSTEM" -eq 1 ]]; then
-        log_info "Upgrading system packages..."
+        log_info "Memutakhirkan paket sistem..."
         sudo apt upgrade -y -qq || {
-            log_warn "apt upgrade encountered issues. Continuing."
+            log_warn "apt upgrade mengalami masalah. Melanjutkan proses instalasi."
         }
     else
-        log_info "Skipping apt upgrade by default for safer VPS behavior."
+        log_info "Melewati apt upgrade secara default demi keamanan VPS."
     fi
 }
 
@@ -171,59 +171,59 @@ install_dependencies() {
         ca-certificates
     )
 
-    log_info "Installing dependencies..."
+    log_info "Memasang dependensi..."
     local pkg
     for pkg in "${deps[@]}"; do
         if ! dpkg -s "$pkg" >/dev/null 2>&1; then
-            log_info "Installing ${pkg}..."
+            log_info "Memasang ${pkg}..."
             sudo apt install -y -qq "$pkg" || {
-                log_error "Failed to install ${pkg}"
+                log_error "Gagal memasang ${pkg}."
                 exit 1
             }
         else
-            log_info "${pkg} already installed"
+            log_info "${pkg} sudah terpasang."
         fi
     done
 }
 
 install_node() {
     local version=$1
-    log_info "Installing Node.js ${version}..."
+    log_info "Memasang Node.js ${version}..."
 
     curl -fsSL "https://deb.nodesource.com/setup_${version}.x" | sudo bash - || {
-        log_error "Failed to configure NodeSource for Node.js ${version}"
+        log_error "Gagal mengonfigurasi NodeSource untuk Node.js ${version}."
         return 1
     }
 
     sudo apt install -y nodejs || {
-        log_error "Failed to install Node.js ${version}"
+        log_error "Gagal memasang Node.js ${version}."
         return 1
     }
 }
 
 ensure_node() {
-    log_info "Checking Node.js..."
+    log_info "Memeriksa Node.js..."
 
     if check_command node; then
         local node_major
         node_major=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        log_info "Found Node.js $(node -v)"
+        log_info "Node.js ditemukan: $(node -v)"
 
         if [[ "$node_major" -ge 24 ]]; then
-            log_info "Node.js version is acceptable (>=24)"
+            log_info "Versi Node.js memenuhi syarat (>=24)."
         elif [[ "$node_major" -ge 22 ]]; then
-            log_warn "Node.js 22 detected. OpenClaw recommends Node.js 24."
+            log_warn "Node.js 22 terdeteksi. OpenClaw merekomendasikan Node.js 24."
         else
-            log_warn "Node.js is too old: $(node -v)"
+            log_warn "Versi Node.js terlalu lama: $(node -v)"
             install_node 24 || install_node 22 || {
-                log_error "Failed to install a supported Node.js version."
+                log_error "Gagal memasang versi Node.js yang didukung."
                 exit 1
             }
         fi
     else
-        log_info "Node.js not found. Installing..."
+        log_info "Node.js tidak ditemukan. Memulai pemasangan..."
         install_node 24 || install_node 22 || {
-            log_error "Failed to install Node.js."
+            log_error "Gagal memasang Node.js."
             exit 1
         }
     fi
@@ -236,40 +236,42 @@ install_openclaw_with_npm() {
         return 0
     fi
 
-    log_warn "Retrying npm install with sudo..."
-    sudo npm install -g openclaw@latest || {
-        log_error "npm install failed"
-        log_info "Trying with SHARP_IGNORE_GLOBAL_LIBVIPS=1..."
-        sudo env SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest
-    }
+    log_warn "Mencoba lagi instalasi npm dengan sudo..."
+    if sudo npm install -g openclaw@latest; then
+        return 0
+    fi
+
+    log_error "Instalasi npm gagal."
+    log_info "Mencoba dengan SHARP_IGNORE_GLOBAL_LIBVIPS=1..."
+    sudo env SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest || return 1
 }
 
 install_openclaw() {
-    log_info "Installing OpenClaw..."
+    log_info "Memasang OpenClaw..."
 
     if curl -fsSL https://openclaw.ai/install.sh -o /tmp/openclaw-install.sh; then
-        log_info "Running official installer..."
+        log_info "Menjalankan installer resmi..."
         chmod +x /tmp/openclaw-install.sh
         sudo bash /tmp/openclaw-install.sh || {
-            log_warn "Official installer failed. Falling back to npm..."
+            log_warn "Installer resmi gagal. Beralih ke metode npm..."
             install_openclaw_with_npm || exit 1
         }
     else
-        log_warn "Could not download official installer. Falling back to npm..."
+        log_warn "Tidak dapat mengunduh installer resmi. Beralih ke metode npm..."
         install_openclaw_with_npm || exit 1
     fi
 }
 
 verify_installation() {
-    log_info "Verifying installation..."
+    log_info "Memverifikasi instalasi..."
     if ! check_command openclaw; then
-        log_error "OpenClaw command not found after installation."
+        log_error "Perintah openclaw tidak ditemukan setelah proses instalasi."
         exit 1
     fi
 
-    log_info "OpenClaw installed: $(openclaw --version)"
-    log_info "Running health check..."
-    openclaw doctor || log_warn "Doctor reported issues. Review the output above."
+    log_info "OpenClaw berhasil terpasang: $(openclaw --version)"
+    log_info "Menjalankan pemeriksaan kesehatan sistem..."
+    openclaw doctor || log_warn "Pemeriksaan melaporkan adanya masalah. Tinjau output di atas."
 }
 
 maybe_handle_existing_install() {
@@ -277,38 +279,38 @@ maybe_handle_existing_install() {
         return
     fi
 
-    log_warn "OpenClaw is already installed: $(openclaw --version)"
+    log_warn "OpenClaw sudah terpasang: $(openclaw --version)"
     if [[ "$AUTO_REINSTALL" -eq 1 ]]; then
-        log_info "Continuing because --reinstall was provided."
+        log_info "Melanjutkan karena opsi --reinstall diberikan."
         return
     fi
 
-    if ! confirm "Reinstall OpenClaw?"; then
+    if ! confirm "Pasang ulang OpenClaw?"; then
         exit 0
     fi
 }
 
 maybe_start_gateway() {
     echo ""
-    log_info "OpenClaw installation complete!"
+    log_info "Instalasi OpenClaw selesai!"
     echo ""
-    echo "To start the gateway:"
+    echo "Untuk memulai gateway, jalankan:"
     echo "  openclaw gateway start"
     echo ""
-    echo "To run onboarding:"
+    echo "Untuk menjalankan proses onboarding:"
     echo "  openclaw onboard"
     echo ""
 
     if [[ "$AUTO_START_GATEWAY" -eq 1 ]]; then
         openclaw gateway start
-        log_info "Gateway started."
+        log_info "Gateway berhasil dijalankan."
         openclaw gateway status || true
         return
     fi
 
-    if confirm "Start gateway now?"; then
+    if confirm "Mulai gateway sekarang?"; then
         openclaw gateway start
-        log_info "Gateway started."
+        log_info "Gateway berhasil dijalankan."
         openclaw gateway status || true
     fi
 }
@@ -332,7 +334,7 @@ parse_args() {
             --log-file)
                 shift
                 if [[ $# -eq 0 ]]; then
-                    log_error "--log-file requires a path."
+                    log_error "Opsi --log-file membutuhkan argumen berupa jalur file."
                     exit 1
                 fi
                 LOG_FILE=$1
@@ -342,7 +344,7 @@ parse_args() {
                 exit 0
                 ;;
             *)
-                log_error "Unknown option: $1"
+                log_error "Opsi tidak dikenal: $1"
                 usage
                 exit 1
                 ;;
@@ -359,7 +361,7 @@ main() {
     echo "  OpenClaw Auto-Installer for Ubuntu"
     echo "=========================================="
     echo ""
-    log_info "Log file: ${LOG_FILE}"
+    log_info "File log: ${LOG_FILE}"
 
     ensure_sudo_access
     preflight_checks
@@ -372,7 +374,7 @@ main() {
     maybe_start_gateway
 
     echo ""
-    log_info "Installation complete!"
+    log_info "Instalasi selesai!"
 }
 
 main "$@"

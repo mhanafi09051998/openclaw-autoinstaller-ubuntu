@@ -10,10 +10,10 @@ Repositori ini menyediakan `openclaw-ubuntu-installer.sh` yang melakukan:
 - pengecekan konektivitas ke host penting
 - instalasi dependensi dasar
 - instalasi Node.js yang kompatibel
-- percobaan installer resmi OpenClaw
-- fallback ke `npm` bila installer resmi gagal
-- verifikasi hasil instalasi dan `openclaw doctor`
-- logging ke file
+- mencoba installer resmi OpenClaw
+- beralih ke `npm` bila installer resmi gagal
+- verifikasi hasil instalasi dengan `openclaw doctor`
+- pencatatan log ke file
 
 ## Cocok Untuk
 
@@ -52,6 +52,13 @@ git clone https://github.com/mhanafi09051998/openclaw-autoinstaller-ubuntu.git
 cd openclaw-autoinstaller-ubuntu
 ```
 
+Setelah `git clone`, nama `openclaw-autoinstaller-ubuntu` adalah folder repositori.
+File yang harus dijalankan adalah:
+
+```bash
+openclaw-ubuntu-installer.sh
+```
+
 Berikan izin eksekusi:
 
 ```bash
@@ -62,6 +69,20 @@ Jalankan mode aman default:
 
 ```bash
 ./openclaw-ubuntu-installer.sh
+```
+
+Contoh lengkap di VPS jika repo di-clone ke home directory:
+
+```bash
+cd ~/openclaw-autoinstaller-ubuntu
+chmod +x openclaw-ubuntu-installer.sh
+./openclaw-ubuntu-installer.sh
+```
+
+Jangan jalankan folder repo seperti ini karena itu direktori, bukan file:
+
+```bash
+./openclaw-autoinstaller-ubuntu/
 ```
 
 ## Mode Yang Disarankan
@@ -75,6 +96,14 @@ Untuk VPS produksi, gunakan mode default dulu:
 Untuk VPS baru yang ingin otomatis tanpa prompt:
 
 ```bash
+./openclaw-ubuntu-installer.sh --yes --reinstall
+```
+
+Contoh lengkap:
+
+```bash
+cd ~/openclaw-autoinstaller-ubuntu
+chmod +x openclaw-ubuntu-installer.sh
 ./openclaw-ubuntu-installer.sh --yes --reinstall
 ```
 
@@ -104,11 +133,11 @@ Jika ingin menyimpan log ke lokasi tertentu:
 
 Opsi yang tersedia:
 
-- `--yes` untuk mode non-interaktif
-- `--reinstall` untuk lanjut reinstall jika OpenClaw sudah ada
-- `--upgrade-system` untuk menjalankan `apt upgrade`
-- `--start-gateway` untuk langsung menjalankan gateway
-- `--log-file PATH` untuk menentukan file log
+- `--yes` untuk mode non-interaktif (jawab semua konfirmasi dengan ya)
+- `--reinstall` untuk melanjutkan pemasangan ulang jika OpenClaw sudah terpasang
+- `--upgrade-system` untuk menjalankan `apt upgrade` sebelum instalasi
+- `--start-gateway` untuk langsung menjalankan gateway setelah instalasi selesai
+- `--log-file PATH` untuk menentukan lokasi file log
 
 ## Lokasi Log
 
@@ -147,24 +176,24 @@ Skrip akan melakukan langkah berikut:
 
 Jika `sudo` gagal:
 
-- pastikan user Anda masuk grup sudo
-- cek dengan `sudo -v`
+- pastikan pengguna Anda terdaftar dalam grup sudo
+- periksa dengan perintah `sudo -v`
 
 Jika Node.js gagal dipasang:
 
-- pastikan `deb.nodesource.com` bisa diakses
-- cek apakah ada konflik paket `nodejs` lama
+- pastikan `deb.nodesource.com` dapat diakses
+- periksa apakah ada konflik dengan paket `nodejs` versi lama
 
 Jika installer resmi gagal:
 
-- skrip akan mencoba fallback ke `npm`
-- cek log untuk melihat error asli
+- skrip akan secara otomatis beralih ke `npm`
+- periksa log untuk melihat pesan kesalahan asli
 
-Jika `openclaw doctor` memberi warning:
+Jika `openclaw doctor` memberikan peringatan:
 
-- baca output doctor
-- lanjutkan onboarding dan konfigurasi API key sesuai kebutuhan OpenClaw
+- baca output dari perintah tersebut dengan teliti
+- lanjutkan proses onboarding dan konfigurasi API key sesuai kebutuhan OpenClaw
 
 ## Lisensi
 
-Belum ada file `LICENSE` di repositori ini. Jika repositori akan dipublikasikan lebih luas, sebaiknya tambahkan lisensi resmi.
+Belum ada file `LICENSE` di repositori ini. Jika repositori akan dipublikasikan secara lebih luas, sebaiknya tambahkan lisensi resmi.
